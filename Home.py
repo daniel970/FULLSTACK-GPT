@@ -1,13 +1,10 @@
 import streamlit as st
+from langchain.prompts import PromptTemplate
 
-st.title("Hello World!")
+st.write("hello")
 
-st.subheader("Welcome to Steamlit!")
+st.write([1,2,3,4])
 
-st.markdown(
-    """
-#### I love it!
+st.write({"x": 1})
 
-
-"""
-)
+st.write(PromptTemplate)
