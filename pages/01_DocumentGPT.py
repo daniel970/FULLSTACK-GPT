@@ -18,16 +18,18 @@ st.set_page_config(
 
 class ChatCallbackHandler(BaseCallbackHandler):
 
-    def on_llm_start(self,*args, **kwargs):
-        with st.sidebar:
-            st.write("llm started!")
+    message = ""
 
-    def on_llm_end(self,*args, **kwargs):
+    def on_llm_start(self,*args, **kwargs):
+        self.message_box = st.empty()
+
+    def on_llm_end(self, *args, **kwargs):
         with st.sidebar:
             st.write("llm ended!")
 
     def on_llm_new_token(self, token, *args, **kwargs):
-        print(token)
+        self.message += token
+        self.message_box.markdown(self.message)
 
 llm = ChatOpenAI(
     temperature=0.1,
@@ -98,12 +100,12 @@ st.title("DocumentGPT")
 
 st.markdown(
     """
-Welcome!
-            
-Use this chatbot to ask questions to an AI about your files!
+    Welcome!
+                
+    Use this chatbot to ask questions to an AI about your files!
 
-Upload your files on the sidebar.
-"""
+    Upload your files on the sidebar.
+    """
 )
 
 with st.sidebar:
@@ -127,8 +129,8 @@ if file:
             | prompt
             | llm
         )
-        response = chain.invoke(message)
-        send_message(response.content, "ai")
+        with st.chat_message("ai"):
+            response = chain.invoke(message)
 
 else:
     st.session_state["messages"] = []
