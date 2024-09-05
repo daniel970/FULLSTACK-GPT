@@ -31,7 +31,7 @@ class ChatCallbackHandler(BaseCallbackHandler):
 
 llm = ChatOpenAI(
     temperature=0.1,
-    steaming=True,
+    streaming=True,
     callbacks=[
         ChatCallbackHandler(),
     ]
