@@ -1,5 +1,3 @@
-from typing import Any, Dict, List
-from uuid import UUID
 from langchain.prompts import ChatPromptTemplate
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.embeddings import CacheBackedEmbeddings, OllamaEmbeddings
@@ -16,21 +14,20 @@ st.set_page_config(
     page_icon="📃",
 )
 
-class ChatCallbackHandler(BaseCallbackHandler):
 
+class ChatCallbackHandler(BaseCallbackHandler):
     message = ""
 
-    def on_llm_start(self,*args, **kwargs):
+    def on_llm_start(self, *args, **kwargs):
         self.message_box = st.empty()
 
     def on_llm_end(self, *args, **kwargs):
         save_message(self.message, "ai")
-        with st.sidebar:
-            st.write("llm ended!")
 
     def on_llm_new_token(self, token, *args, **kwargs):
         self.message += token
         self.message_box.markdown(self.message)
+
 
 llm = ChatOllama(
     model="mistral:latest",
@@ -38,7 +35,7 @@ llm = ChatOllama(
     streaming=True,
     callbacks=[
         ChatCallbackHandler(),
-    ]
+    ],
 )
 
 
@@ -56,16 +53,16 @@ def embed_file(file):
     )
     loader = UnstructuredFileLoader(file_path)
     docs = loader.load_and_split(text_splitter=splitter)
-    embeddings = OllamaEmbeddings(
-        model = "mistral:latest"
-    )
+    embeddings = OllamaEmbeddings(model="mistral:latest")
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
     vectorstore = FAISS.from_documents(docs, cached_embeddings)
     retriever = vectorstore.as_retriever()
     return retriever
 
+
 def save_message(message, role):
     st.session_state["messages"].append({"message": message, "role": role})
+
 
 def send_message(message, role, save=True):
     with st.chat_message(role):
@@ -87,31 +84,25 @@ def format_docs(docs):
     return "\n\n".join(document.page_content for document in docs)
 
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            """
-            Answer the question using ONLY the following context. If you don't know the answer just say you don't know. DON'T make anything up.
-            
-            Context: {context}
-            """,
-        ),
-        ("human", "{question}"),
-    ]
+prompt = ChatPromptTemplate.from_template(
+    """Answer the question using ONLY the following context and not your training data. If you don't know the answer just say you don't know. DON'T make anything up.
+    
+    Context: {context}
+    Question:{question}
+    """
 )
 
 
-st.title("DocumentGPT")
+st.title("PrivateGPT")
 
 st.markdown(
     """
-    Welcome!
-                
-    Use this chatbot to ask questions to an AI about your files!
+Welcome!
+            
+Use this chatbot to ask questions to an AI about your files!
 
-    Upload your files on the sidebar.
-    """
+Upload your files on the sidebar.
+"""
 )
 
 with st.sidebar:
@@ -137,6 +128,7 @@ if file:
         )
         with st.chat_message("ai"):
             chain.invoke(message)
+
 
 else:
     st.session_state["messages"] = []
