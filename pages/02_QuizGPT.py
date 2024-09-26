@@ -57,11 +57,16 @@ with st.sidebar:
             with st.status("Searching Wikipedia..."):
                 docs = retriever.get_relevant_documents(topic)
 
-
 if not docs:
-    st.markdown("""
-
-                """)
+    st.markdown(
+        """
+    Welcome to QuizGPT.
+                
+    I will make a quiz from Wikipedia articles or files you upload to test your knowledge and help you study.
+                
+    Get started by uploading a file or searching on Wikipedia in the sidebar.
+    """
+    )
     
 else:
     st.write(docs)
